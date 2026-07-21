@@ -1,5 +1,7 @@
-"""ODE solvers for reactor dynamics simulations."""
+"""
+Numerical solvers provided by OPUS.
+"""
 
-from opus.solvers.ode_solver import ODESolver, ODESolution
+from opus.solvers.ode_solver import ODESolver
 
-__all__ = ["ODESolver", "ODESolution"]
+__all__ = ["ODESolver"]

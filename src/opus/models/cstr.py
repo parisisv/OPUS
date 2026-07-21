@@ -15,6 +15,7 @@ from opus.kinetics.kinetics import (
 )
 from opus.core.parameters import SimulationParameters
 from opus.models.state import ReactorState
+from opus.core.interfaces import StateVector
 
 class CSTR:
     """
@@ -31,7 +32,7 @@ class CSTR:
 
         self.params = parameters
 
-    def rhs(self, t: float, y: np.ndarray) -> np.ndarray:
+    def rhs(self, t: float, y: StateVector) -> StateVector:
         """
         Compute the time derivatives of the reactor state.
 
@@ -52,9 +53,8 @@ class CSTR:
         Returns
         -------
         ndarray
-
-            [dCA/dt,
-             dT/dt]
+            Time derivatives of the state vector
+            [dCA/dt, dT/dt]
         """
 
         state = ReactorState.from_vector(y)
@@ -62,76 +62,43 @@ class CSTR:
         CA = state.concentration
         T = state.temperature
 
-        p = self.params
+        # p = self.params
 
         # -----------------------------------------------------------------
         # Reaction kinetics
         # -----------------------------------------------------------------
 
-        r = first_order_rate(
-            concentration=CA,
-            temperature=T,
-            k0=p.kinetics.k0,
-            activation_energy=p.kinetics.activation_energy,
-            gas_constant=p.kinetics.gas_constant,
+        r = first_order_rate(concentration=CA,
+            temperature=T, k0=self.params.kinetics.k0, 
+            activation_energy=self.params.kinetics.activation_energy,
+            gas_constant=self.params.kinetics.gas_constant,
         )
 
         q_rxn = reaction_heat(
             reaction_rate=r,
-            heat_of_reaction=p.kinetics.heat_of_reaction,
+            heat_of_reaction=self.params.kinetics.heat_of_reaction,
         )
 
         # -----------------------------------------------------------------
         # Mass balance
         # -----------------------------------------------------------------
 
-        dCA_dt = (
-            p.feed.flow_rate / p.reactor.volume
-        ) * (
-            p.feed.concentration - CA
-        ) - r
+        dCA_dt = (self.params.feed.flow_rate / self.params.reactor.volume) * (self.params.feed.concentration - CA) - r
 
         # -----------------------------------------------------------------
         # Energy balance
         # -----------------------------------------------------------------
 
-        convection = (
-            p.feed.flow_rate / p.reactor.volume
-        ) * (
-            p.feed.temperature - T
-        )
+        convection = (self.params.feed.flow_rate / self.params.reactor.volume) * (self.params.feed.temperature - T)
 
-        reaction = (
-            q_rxn
-            /
-            (
-                p.reactor.density
-                * p.reactor.heat_capacity
-            )
-        )
+        reaction = (q_rxn/(self.params.reactor.density * self.params.reactor.heat_capacity))
 
-        cooling = (
-            p.reactor.UA
-            /
-            (
-                p.reactor.density
-                * p.reactor.heat_capacity
-                * p.reactor.volume
-            )
-        ) * (
-            T - p.cooling.coolant_temperature
-        )
+        cooling = (self.params.reactor.UA / (self.params.reactor.density * self.params.reactor.heat_capacity * self.params.reactor.volume)) * \
+                  ( T - self.params.cooling.coolant_temperature)
 
-        dT_dt = (
-            convection
-            + reaction
-            - cooling
-        )
+        dT_dt = (convection + reaction - cooling)
 
         return np.array(
-            [
-                dCA_dt,
-                dT_dt,
-            ],
+            [dCA_dt, dT_dt],
             dtype=float,
         )
