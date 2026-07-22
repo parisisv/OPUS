@@ -1,5 +1,6 @@
 import numpy as np
 import pytest
+from typing import cast
 from pydantic import ValidationError
 
 from opus.core.configuration import (
@@ -8,6 +9,8 @@ from opus.core.configuration import (
     TimeConfiguration,
 )
 from opus.models.state import ReactorState
+
+ValidationErrorType = cast(type[BaseException], ValidationError)
 
 
 def test_default_solver_configuration() -> None:
@@ -48,7 +51,7 @@ def test_rejects_invalid_solver_configuration(
     }
     arguments[field] = value
 
-    with pytest.raises(ValidationError):
+    with pytest.raises(ValidationErrorType):
         SolverConfiguration(**arguments)
 
 
@@ -103,7 +106,7 @@ def test_rejects_invalid_time_interval(
     initial_time: float,
     final_time: float,
 ) -> None:
-    with pytest.raises(ValidationError):
+    with pytest.raises(ValidationErrorType):
         TimeConfiguration(
             initial_time=initial_time,
             final_time=final_time,
@@ -117,7 +120,7 @@ def test_rejects_invalid_time_interval(
 def test_rejects_invalid_evaluation_point_count(
     number_of_evaluation_points: int,
 ) -> None:
-    with pytest.raises(ValidationError):
+    with pytest.raises(ValidationErrorType):
         TimeConfiguration(
             initial_time=0.0,
             final_time=10.0,
@@ -184,5 +187,5 @@ def test_configuration_is_immutable() -> None:
         final_time=10.0,
     )
 
-    with pytest.raises(ValidationError):
+    with pytest.raises(ValidationErrorType):
         configuration.final_time = 20.0
