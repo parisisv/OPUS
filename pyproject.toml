@@ -5,6 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "opus"
 version = "0.1.0"
+license = {text = "MIT"}
 description = "Open Process Uncertainty Simulator"
 authors = [
     { name = "Vassilis Parisis" }
@@ -44,5 +45,3 @@ target-version = "py312"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-
-license = "MIT"
