@@ -109,7 +109,7 @@ class KineticParameters(BaseModel):
 
     activation_energy: Annotated[
         float,
-        Field(gt=0, description="Activation energy [J/mol]")
+        Field(ge=0, description="Activation energy [J/mol]")
     ]
 
     heat_of_reaction: Annotated[

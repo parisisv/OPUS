@@ -30,7 +30,7 @@ class CSTR:
 
     def __init__(self, parameters: SimulationParameters):
 
-        self.params = parameters
+        self.parameters = parameters
 
     def rhs(self, t: float, y: StateVector) -> StateVector:
         """
@@ -69,32 +69,32 @@ class CSTR:
         # -----------------------------------------------------------------
 
         r = first_order_rate(concentration=CA,
-            temperature=T, k0=self.params.kinetics.k0, 
-            activation_energy=self.params.kinetics.activation_energy,
-            gas_constant=self.params.kinetics.gas_constant,
+            temperature=T, k0=self.parameters.kinetics.k0, 
+            activation_energy=self.parameters.kinetics.activation_energy,
+            gas_constant=self.parameters.kinetics.gas_constant,
         )
 
         q_rxn = reaction_heat(
             reaction_rate=r,
-            heat_of_reaction=self.params.kinetics.heat_of_reaction,
+            heat_of_reaction=self.parameters.kinetics.heat_of_reaction,
         )
 
         # -----------------------------------------------------------------
         # Mass balance
         # -----------------------------------------------------------------
 
-        dCA_dt = (self.params.feed.flow_rate / self.params.reactor.volume) * (self.params.feed.concentration - CA) - r
+        dCA_dt = (self.parameters.feed.flow_rate / self.parameters.reactor.volume) * (self.parameters.feed.concentration - CA) - r
 
         # -----------------------------------------------------------------
         # Energy balance
         # -----------------------------------------------------------------
 
-        convection = (self.params.feed.flow_rate / self.params.reactor.volume) * (self.params.feed.temperature - T)
+        convection = (self.parameters.feed.flow_rate / self.parameters.reactor.volume) * (self.parameters.feed.temperature - T)
 
-        reaction = (q_rxn/(self.params.reactor.density * self.params.reactor.heat_capacity))
+        reaction = (q_rxn/(self.parameters.reactor.density * self.parameters.reactor.heat_capacity))
 
-        cooling = (self.params.reactor.UA / (self.params.reactor.density * self.params.reactor.heat_capacity * self.params.reactor.volume)) * \
-                  ( T - self.params.cooling.coolant_temperature)
+        cooling = (self.parameters.reactor.UA / (self.parameters.reactor.density * self.parameters.reactor.heat_capacity * self.parameters.reactor.volume)) * \
+                  ( T - self.parameters.cooling.coolant_temperature)
 
         dT_dt = (convection + reaction - cooling)
 
